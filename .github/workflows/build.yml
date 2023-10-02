@@ -63,7 +63,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
-          source: "procedure-template-1.0.0-SNAPSHOT.jar"
+          source: procedure-template-1.0.0-SNAPSHOT.jar
           target: "." # target directory on remote server
 
       # - name: Prepare plugin file path
@@ -95,39 +95,27 @@ jobs:
       #       echo "Append suffix .old to all previous versions"
       #       sudo find . -iname "$PLUGIN_PREFIX*.jar" -exec rename .jar .jar.old '{}' \;
 
-      # - name: Move plugin to target directory and update permissions
-      #   if: success()
-      #   uses: appleboy/ssh-action@master
-      #   env:
-      #     PLUGIN_FILE: ${{ env.PLUGIN_FILE }}
-      #     PLUGIN_PATH: ${{ env.PLUGIN_PATH }}
-      #   with:
-      #     host: ${{ env.REMOTE_HOST }}
-      #     username: ${{ env.REMOTE_USER }}
-      #     key: ${{ env.REMOTE_SSH_KEY_CONTENT }}
-      #     key_path: ${{ env.REMOTE_SSH_KEY_FILE }}
-      #     passphrase: ${{ env.REMOTE_SSH_KEY_PASSPHRASE }}
-      #     envs: PLUGIN_FILE,PLUGIN_PATH
-      #     script_stop: true
-      #     script: |
-      #       echo "Moving $PLUGIN_FILE to $PLUGIN_PATH"
-      #       sudo mv $PLUGIN_FILE $PLUGIN_PATH
-      #       echo "Changing owner and group to neo4j:neo4j"
-      #       sudo chown -R neo4j:neo4j $PLUGIN_PATH
-      #       echo "Changing mode to executable"
-      #       sudo chmod +x $PLUGIN_PATH
+      - name: Move plugin to target directory and update permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          script_stop: true
+          script: |
+            sudo mv procedure-template-1.0.0-SNAPSHOT.jar /var/lib/neo4j/plugins
+            sudo chown -R neo4j:neo4j /var/lib/neo4j/plugins/procedure-template-1.0.0-SNAPSHOT.jar
+            sudo chmod +x /var/lib/neo4j/plugins/procedure-template-1.0.0-SNAPSHOT.jar
 
-      # - name: Restart Neo4j serice
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ env.REMOTE_HOST }}
-      #     username: ${{ env.REMOTE_USER }}
-      #     key: ${{ env.REMOTE_SSH_KEY_CONTENT }}
-      #     key_path: ${{ env.REMOTE_SSH_KEY_FILE }}
-      #     passphrase: ${{ env.REMOTE_SSH_KEY_PASSPHRASE }}
-      #     script_stop: true
-      #     script: |
-      #       echo "Restart Neo4j service"
-      #       sudo systemctl restart neo4j
-      #       sudo systemctl status -l neo4j.service
+      - name: Restart Neo4j serice
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          script_stop: true
+          script: |
+            echo "Restart Neo4j service"
+            sudo systemctl restart neo4j
+            sudo systemctl status -l neo4j.service
 
