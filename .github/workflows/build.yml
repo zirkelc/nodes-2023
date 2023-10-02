@@ -1,0 +1,137 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: "Build"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.java"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      plugin: ${{ steps.build.outputs.plugin }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Set up JDK 11
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: "temurin"
+          cache: maven
+
+      # Build and test with Maven
+      - id: build
+        name: Build with Maven
+        shell: bash
+        run: |
+          mvn -B package --file pom.xml
+          rm -f target/original-*.jar
+          mv target/*.jar .
+          echo "PLUGIN_FILE=$(ls *.jar)" >> $GITHUB_ENV
+          echo "$(ls *.jar)" >> $GITHUB_STEP_SUMMARY
+          echo "plugin=$(ls *.jar)" >> $GITHUB_OUTPUT
+
+      # Upload plugin jar as artifact
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugin-jar
+          path: ${{ env.PLUGIN_FILE }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download plugin artifact
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: plugin-jar
+
+      - name: Upload plugin to remote Neo4j server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY_CONTENT }}
+          source: ${{ steps.download.outputs.download-path }} # source on local machine
+          target: "/var/lib/neo4j/plugins" # target directory on remote server
+
+      # - name: Prepare plugin file path
+      #   shell: bash
+      #   run: |
+      #     PLUGIN_FILE=$(basename ${{ inputs.plugin_artifact }})
+      #     echo "PLUGIN_FILE=$(basename ${{ inputs.plugin_artifact }})" >> $GITHUB_ENV
+      #     echo "PLUGIN_DIR=/var/lib/neo4j/plugins" >> $GITHUB_ENV
+      #     echo "PLUGIN_PATH=/var/lib/neo4j/plugins/$(basename ${{ inputs.plugin_artifact }})" >> $GITHUB_ENV
+      #     echo "PLUGIN_PREFIX=$(sed -rn "s/^(.*)-[0-9]+\.[0-9]+\.[0-9]+\.jar$/\1/p" <<< $PLUGIN_FILE)" >> $GITHUB_ENV
+
+      # - name: Rename old version of plugin
+      #   uses: appleboy/ssh-action@master
+      #   env:
+      #     PLUGIN_DIR: ${{ env.PLUGIN_DIR }}
+      #     PLUGIN_PREFIX: ${{ env.PLUGIN_PREFIX }} # the plugin name without version
+      #   with:
+      #     host: ${{ env.REMOTE_HOST }}
+      #     username: ${{ env.REMOTE_USER }}
+      #     key: ${{ env.REMOTE_SSH_KEY_CONTENT }}
+      #     key_path: ${{ env.REMOTE_SSH_KEY_FILE }}
+      #     passphrase: ${{ env.REMOTE_SSH_KEY_PASSPHRASE }}
+      #     envs: PLUGIN_DIR,PLUGIN_PREFIX
+      #     script_stop: true
+      #     script: |
+      #       cd $PLUGIN_DIR
+      #       echo "List previous version of plugin with prefix $PLUGIN_PREFIX"
+      #       find . -iname "$PLUGIN_PREFIX*.jar"
+      #       echo "Append suffix .old to all previous versions"
+      #       sudo find . -iname "$PLUGIN_PREFIX*.jar" -exec rename .jar .jar.old '{}' \;
+
+      # - name: Move plugin to target directory and update permissions
+      #   if: success()
+      #   uses: appleboy/ssh-action@master
+      #   env:
+      #     PLUGIN_FILE: ${{ env.PLUGIN_FILE }}
+      #     PLUGIN_PATH: ${{ env.PLUGIN_PATH }}
+      #   with:
+      #     host: ${{ env.REMOTE_HOST }}
+      #     username: ${{ env.REMOTE_USER }}
+      #     key: ${{ env.REMOTE_SSH_KEY_CONTENT }}
+      #     key_path: ${{ env.REMOTE_SSH_KEY_FILE }}
+      #     passphrase: ${{ env.REMOTE_SSH_KEY_PASSPHRASE }}
+      #     envs: PLUGIN_FILE,PLUGIN_PATH
+      #     script_stop: true
+      #     script: |
+      #       echo "Moving $PLUGIN_FILE to $PLUGIN_PATH"
+      #       sudo mv $PLUGIN_FILE $PLUGIN_PATH
+      #       echo "Changing owner and group to neo4j:neo4j"
+      #       sudo chown -R neo4j:neo4j $PLUGIN_PATH
+      #       echo "Changing mode to executable"
+      #       sudo chmod +x $PLUGIN_PATH
+
+      # - name: Restart Neo4j serice
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ env.REMOTE_HOST }}
+      #     username: ${{ env.REMOTE_USER }}
+      #     key: ${{ env.REMOTE_SSH_KEY_CONTENT }}
+      #     key_path: ${{ env.REMOTE_SSH_KEY_FILE }}
+      #     passphrase: ${{ env.REMOTE_SSH_KEY_PASSPHRASE }}
+      #     script_stop: true
+      #     script: |
+      #       echo "Restart Neo4j service"
+      #       sudo systemctl restart neo4j
+      #       sudo systemctl status -l neo4j.service
+
