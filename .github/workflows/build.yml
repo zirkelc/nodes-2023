@@ -55,7 +55,7 @@ jobs:
         id: download
         with:
           name: plugin-jar
-          path: target/procedure-template-1.0.0-SNAPSHOT.jar
+          # path: target/procedure-template-1.0.0-SNAPSHOT.jar
 
       - name: Upload plugin to remote Neo4j server
         uses: appleboy/scp-action@master
@@ -63,7 +63,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
-          source: "./target/procedure-template-1.0.0-SNAPSHOT.jar"
+          source: "procedure-template-1.0.0-SNAPSHOT.jar"
           target: "." # target directory on remote server
 
       # - name: Prepare plugin file path
