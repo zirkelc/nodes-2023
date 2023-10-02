@@ -6,8 +6,8 @@ name: "Build"
 on:
   push:
     branches: [main]
-    paths:
-      - "**.java"
+    # paths:
+    #   - "**.java"
 
 jobs:
   build:
@@ -33,19 +33,14 @@ jobs:
         name: Build with Maven
         shell: bash
         run: |
-          mvn -B package --file pom.xml
-          rm -f target/original-*.jar
-          mv target/*.jar .
-          echo "PLUGIN_FILE=$(ls *.jar)" >> $GITHUB_ENV
-          echo "$(ls *.jar)" >> $GITHUB_STEP_SUMMARY
-          echo "plugin=$(ls *.jar)" >> $GITHUB_OUTPUT
+          mvn clean package
 
       # Upload plugin jar as artifact
       - name: Upload plugin artifact
         uses: actions/upload-artifact@v3
         with:
           name: plugin-jar
-          path: ${{ env.PLUGIN_FILE }}
+          path: target/procedure-template-1.0-SNAPSHOT.jar
 
   deploy:
     runs-on: ubuntu-latest
@@ -66,7 +61,7 @@ jobs:
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.REMOTE_SSH_KEY_CONTENT }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
           source: ${{ steps.download.outputs.download-path }} # source on local machine
           target: "/var/lib/neo4j/plugins" # target directory on remote server
 
