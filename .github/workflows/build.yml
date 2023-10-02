@@ -55,6 +55,7 @@ jobs:
         id: download
         with:
           name: plugin-jar
+          path: target/procedure-template-1.0.0-SNAPSHOT.jar
 
       - name: Upload plugin to remote Neo4j server
         uses: appleboy/scp-action@master
