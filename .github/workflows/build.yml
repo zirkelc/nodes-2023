@@ -62,7 +62,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
-          source: ${{ steps.download.outputs.download-path }} # source on local machine
+          source: target/procedure-template-1.0.0-SNAPSHOT.jar
           target: "/var/lib/neo4j/plugins" # target directory on remote server
 
       # - name: Prepare plugin file path
