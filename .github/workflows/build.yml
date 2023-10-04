@@ -1,26 +1,25 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
-
+# Name of the workflow
 name: "Build"
 
+# Controls when the workflow will run
+# This workflow runs only on pushes to the main branch
 on:
   push:
     branches: [main]
     # paths:
     #   - "**.java"
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# This workflow contains a two jobs that run sequentially
 jobs:
+  # Build and test the code
   build:
-    name: Build
     runs-on: ubuntu-latest
-    outputs:
-      plugin: ${{ steps.build.outputs.plugin }}
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up JDK 11
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
@@ -28,36 +27,34 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      # Build and test with Maven
       - id: build
         name: Build with Maven
         shell: bash
-        run: |
-          mvn clean package
+        run: mvn clean package
 
-      # Upload plugin jar as artifact
-      - name: Upload plugin artifact
+      - name: Upload plugin JAR
         uses: actions/upload-artifact@v3
         with:
           name: plugin-jar
           path: target/procedure-template-1.0.0-SNAPSHOT.jar
 
+  # Deploy the plugin to the remote Neo4j server
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy
-    needs: build
+    needs: [build] # this job depends on the build job
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download plugin artifact
+      - name: Download plugin JAR from the build workflow
         uses: actions/download-artifact@v3
         id: download
         with:
           name: plugin-jar
-          # path: target/procedure-template-1.0.0-SNAPSHOT.jar
 
-      - name: Upload plugin to remote Neo4j server
+      # https://github.com/appleboy/scp-action
+      - name: Upload plugin JAR to remote Neo4j server using SCP
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -66,36 +63,8 @@ jobs:
           source: procedure-template-1.0.0-SNAPSHOT.jar
           target: "." # target directory on remote server
 
-      # - name: Prepare plugin file path
-      #   shell: bash
-      #   run: |
-      #     PLUGIN_FILE=$(basename ${{ inputs.plugin_artifact }})
-      #     echo "PLUGIN_FILE=$(basename ${{ inputs.plugin_artifact }})" >> $GITHUB_ENV
-      #     echo "PLUGIN_DIR=/var/lib/neo4j/plugins" >> $GITHUB_ENV
-      #     echo "PLUGIN_PATH=/var/lib/neo4j/plugins/$(basename ${{ inputs.plugin_artifact }})" >> $GITHUB_ENV
-      #     echo "PLUGIN_PREFIX=$(sed -rn "s/^(.*)-[0-9]+\.[0-9]+\.[0-9]+\.jar$/\1/p" <<< $PLUGIN_FILE)" >> $GITHUB_ENV
-
-      # - name: Rename old version of plugin
-      #   uses: appleboy/ssh-action@master
-      #   env:
-      #     PLUGIN_DIR: ${{ env.PLUGIN_DIR }}
-      #     PLUGIN_PREFIX: ${{ env.PLUGIN_PREFIX }} # the plugin name without version
-      #   with:
-      #     host: ${{ env.REMOTE_HOST }}
-      #     username: ${{ env.REMOTE_USER }}
-      #     key: ${{ env.REMOTE_SSH_KEY_CONTENT }}
-      #     key_path: ${{ env.REMOTE_SSH_KEY_FILE }}
-      #     passphrase: ${{ env.REMOTE_SSH_KEY_PASSPHRASE }}
-      #     envs: PLUGIN_DIR,PLUGIN_PREFIX
-      #     script_stop: true
-      #     script: |
-      #       cd $PLUGIN_DIR
-      #       echo "List previous version of plugin with prefix $PLUGIN_PREFIX"
-      #       find . -iname "$PLUGIN_PREFIX*.jar"
-      #       echo "Append suffix .old to all previous versions"
-      #       sudo find . -iname "$PLUGIN_PREFIX*.jar" -exec rename .jar .jar.old '{}' \;
-
-      - name: Move plugin to target directory and update permissions
+      # https://github.com/appleboy/ssh-action
+      - name: Move plugin and update permissions
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -107,6 +76,7 @@ jobs:
             sudo chown -R neo4j:neo4j /var/lib/neo4j/plugins/procedure-template-1.0.0-SNAPSHOT.jar
             sudo chmod +x /var/lib/neo4j/plugins/procedure-template-1.0.0-SNAPSHOT.jar
 
+      # https://github.com/appleboy/ssh-action
       - name: Restart Neo4j serice
         uses: appleboy/ssh-action@master
         with:
@@ -115,7 +85,6 @@ jobs:
           key: ${{ secrets.REMOTE_SSH_KEY }}
           script_stop: true
           script: |
-            echo "Restart Neo4j service"
             sudo systemctl restart neo4j
             sudo systemctl status -l neo4j.service
 
