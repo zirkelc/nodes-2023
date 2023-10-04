@@ -9,6 +9,12 @@ on:
     # paths:
     #   - "**.java"
 
+# Defines the workflow's environment variables
+# Can be accessed via $VARIABLE_NAME 
+env:
+  PLUGIN_JAR: "example-1.0.0-SNAPSHOT.jar"
+  PLUGIN_DIR: "/var/lib/neo4j/plugins"
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 # This workflow contains a two jobs that run sequentially
 jobs:
@@ -36,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: plugin-jar
-          path: target/procedure-template-1.0.0-SNAPSHOT.jar
+          path: target/$PLUGIN_JAR
 
   # Deploy the plugin to the remote Neo4j server
   deploy:
@@ -60,7 +66,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
-          source: procedure-template-1.0.0-SNAPSHOT.jar
+          source: $PLUGIN_JAR
           target: "." # target directory on remote server
 
       # https://github.com/appleboy/ssh-action
@@ -72,9 +78,11 @@ jobs:
           key: ${{ secrets.REMOTE_SSH_KEY }}
           script_stop: true
           script: |
-            sudo mv procedure-template-1.0.0-SNAPSHOT.jar /var/lib/neo4j/plugins
-            sudo chown -R neo4j:neo4j /var/lib/neo4j/plugins/procedure-template-1.0.0-SNAPSHOT.jar
-            sudo chmod +x /var/lib/neo4j/plugins/procedure-template-1.0.0-SNAPSHOT.jar
+            sudo mv $PLUGIN_JAR $PLUGIN_DIR
+            
+            sudo chown -R neo4j:neo4j $PLUGIN_DIR/$PLUGIN_JAR
+
+            sudo chmod +x $PLUGIN_DIR/$PLUGIN_JAR
 
       # https://github.com/appleboy/ssh-action
       - name: Restart Neo4j serice
