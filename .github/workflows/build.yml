@@ -65,7 +65,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
-          source: $PLUGIN_JAR
+          source: ${{ env.PLUGIN_JAR }}
           target: "." # target directory on remote server
 
       # https://github.com/appleboy/ssh-action
@@ -77,11 +77,11 @@ jobs:
           key: ${{ secrets.REMOTE_SSH_KEY }}
           script_stop: true
           script: |
-            sudo mv $PLUGIN_JAR $PLUGIN_DIR
+            sudo mv ${{ env.PLUGIN_JAR }} ${{ env.PLUGIN_DIR }}
 
-            sudo chown neo4j:neo4j $PLUGIN_DIR/$PLUGIN_JAR
+            sudo chown neo4j:neo4j $PLUGIN_DIR/${{ env.PLUGIN_JAR }}
 
-            sudo chmod +x $PLUGIN_DIR/$PLUGIN_JAR
+            sudo chmod +x ${{ env.PLUGIN_DIR }}/${{ env.PLUGIN_JAR }}
 
       # https://github.com/appleboy/ssh-action
       - name: Restart Neo4j serice
