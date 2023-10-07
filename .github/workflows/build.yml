@@ -33,16 +33,15 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - id: build
-        name: Build with Maven
+      - name: Build with Maven
         shell: bash
         run: mvn clean package
 
-      - name: Upload plugin JAR
+      - name: Upload plugin JAR ${{ env.PLUGIN_JAR }}
         uses: actions/upload-artifact@v3
         with:
           name: plugin-jar
-          path: target/$PLUGIN_JAR
+          path: target/${{ env.PLUGIN_JAR }}
 
   # Deploy the plugin to the remote Neo4j server
   deploy:
@@ -53,7 +52,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download plugin JAR from the build workflow
+      - name: Download plugin JAR ${{ env.PLUGIN_JAR }} from the build job
         uses: actions/download-artifact@v3
         id: download
         with:
@@ -79,8 +78,8 @@ jobs:
           script_stop: true
           script: |
             sudo mv $PLUGIN_JAR $PLUGIN_DIR
-            
-            sudo chown -R neo4j:neo4j $PLUGIN_DIR/$PLUGIN_JAR
+
+            sudo chown neo4j:neo4j $PLUGIN_DIR/$PLUGIN_JAR
 
             sudo chmod +x $PLUGIN_DIR/$PLUGIN_JAR
 

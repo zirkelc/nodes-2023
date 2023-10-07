@@ -63,8 +63,8 @@ sudo mv example-1.0.0-SNAPSHOT.jar /var/lib/neo4j/plugins
 Change the owner and group of the JAR file to `neo4j`.
 
 ```sh
-# sudo chown -R <owner>:<group> <file>
-sudo chown -R neo4j:neo4j /var/lib/neo4j/plugins/example-1.0.0-SNAPSHOT.jar
+# sudo chown <owner>:<group> <file>
+sudo chown neo4j:neo4j /var/lib/neo4j/plugins/example-1.0.0-SNAPSHOT.jar
 ```
 
 Make the JAR file executable.
@@ -72,13 +72,6 @@ Make the JAR file executable.
 ```sh
 # sudo chmod +x <file>
 sudo chmod +x /var/lib/neo4j/plugins/example-1.0.0-SNAPSHOT.jar
-```
-
-Verify the file permissions.
-
-```sh
-# ls -l [folder]
-ls -l /var/lib/neo4j/plugins
 ```
 
 Allow the JAR file to be loaded by adding it to the `dbms.security.procedures.allowlist` in the Neo4j configuration file `/etc/neo4j/neo4j.conf`. See [Securing Extensions](https://neo4j.com/docs/operations-manual/4.4/security/securing-extensions/#allow-listing) for more information.
