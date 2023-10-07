@@ -79,7 +79,7 @@ jobs:
           script: |
             sudo mv ${{ env.PLUGIN_JAR }} ${{ env.PLUGIN_DIR }}
 
-            sudo chown neo4j:neo4j $PLUGIN_DIR/${{ env.PLUGIN_JAR }}
+            sudo chown neo4j:neo4j ${{ env.PLUGIN_DIR }}/${{ env.PLUGIN_JAR }}
 
             sudo chmod +x ${{ env.PLUGIN_DIR }}/${{ env.PLUGIN_JAR }}
 
