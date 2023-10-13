@@ -1,22 +1,13 @@
-# Name of the workflow
-name: "Build"
+name: "CI"
 
-# Controls when the workflow will run
-# This workflow runs only on pushes to the main branch
 on:
   push:
     branches: [main]
-    # paths:
-    #   - "**.java"
 
-# Defines the workflow's environment variables
-# Can be accessed via $VARIABLE_NAME 
 env:
   PLUGIN_JAR: "example-1.0.0-SNAPSHOT.jar"
   PLUGIN_DIR: "/var/lib/neo4j/plugins"
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-# This workflow contains a two jobs that run sequentially
 jobs:
   # Build and test the code
   build:
@@ -33,11 +24,11 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Build with Maven
+      - name: Build and test with Maven
         shell: bash
         run: mvn clean package
 
-      - name: Upload plugin JAR ${{ env.PLUGIN_JAR }}
+      - name: Cache plugin JAR ${{ env.PLUGIN_JAR }}
         uses: actions/upload-artifact@v3
         with:
           name: plugin-jar
@@ -49,18 +40,17 @@ jobs:
     needs: [build] # this job depends on the build job
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download plugin JAR ${{ env.PLUGIN_JAR }} from the build job
+      - name: Restore plugin JAR ${{ env.PLUGIN_JAR }}
         uses: actions/download-artifact@v3
         id: download
         with:
           name: plugin-jar
 
-      # https://github.com/appleboy/scp-action
       - name: Upload plugin JAR to remote Neo4j server using SCP
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@master # https://github.com/appleboy/scp-action
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -68,9 +58,8 @@ jobs:
           source: ${{ env.PLUGIN_JAR }}
           target: "." # target directory on remote server
 
-      # https://github.com/appleboy/ssh-action
       - name: Move plugin and update permissions
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@master # https://github.com/appleboy/ssh-action
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -83,9 +72,8 @@ jobs:
 
             sudo chmod +x ${{ env.PLUGIN_DIR }}/${{ env.PLUGIN_JAR }}
 
-      # https://github.com/appleboy/ssh-action
-      - name: Restart Neo4j serice
-        uses: appleboy/ssh-action@master
+      - name: Restart Neo4j serice 
+        uses: appleboy/ssh-action@master # https://github.com/appleboy/ssh-action
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}

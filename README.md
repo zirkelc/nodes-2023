@@ -15,18 +15,18 @@ The following prerequisites are required to follow along with the demo:
 - SSH access to your remote server
 
 ## Custom Procedures and Functions
-The code in this repository is a copy of the official [Neo4j Procedure Template](https://github.com/neo4j-examples/neo4j-procedure-template/tree/4.4) repository. For simplicity, the code has been reduces to only include the `example.join()` user defined function. 
+The code in this repository is a copy of the official [Neo4j Procedure Template](https://github.com/neo4j-examples/neo4j-procedure-template/tree/4.4) repository. For simplicity, the code has been reduced to only include the `example.join()` user defined function. 
 
 The function `example.join()` joins a list of strings using a delimiter. 
 
 ```cypher
-RETURN example.join(['A','quick','brown','fox'],' ') as sentence
+RETURN example.join(['A','quick','brown','fox'], ' ') as sentence
 ```
 
 See [`Join.java`](src/main/java/example/Join.java) and [`JoinTest`](src/test/java/example/JoinTest.java) for the implementation.
 
 ## Manual Steps
-This section describes the manual steps required to build, test, and deploy the code to your remote server.
+This section describes the manual steps required to build, test, and deploy the code to your Neo4j database.
 ### Build and Test
 The project uses [Maven](https://maven.apache.org/). Run the following command to build and test the code:
 
@@ -34,10 +34,10 @@ The project uses [Maven](https://maven.apache.org/). Run the following command t
 mvn clean package
 ```
 
-This will create a JAR file `example-1.0.0-SNAPSHOT.jar` in the `target` folder. The JAR file can be uploaded to your remote server and installed as a plugin.
+This will create a JAR file `example-1.0.0-SNAPSHOT.jar` in the `target` folder. This JAR file can be uploaded to your remote server and installed as a plugin.
 
 ### Deploy
-There are a few steps required to deploy the plugin to your remote server. The following steps assume that you have SSH access to your remote server.
+There are a few steps required to deploy the plugin to your remote server. The following steps assume that you have SSH access to your remote server running the Neo4j database.
 
 Upload the JAR file to your remote server with the `scp` command.
 
@@ -104,7 +104,7 @@ RETURN example.join(["Hello", "World"], " ") as sentence
 ```
 
 ## Automate with GitHub Actions
-The following sections describe how to automate the build, test, and deploy process with GitHub Actions. The complete workflow is defined in the [`.github/workflows/build.yml`](.github/workflows/build.yml) file.
+The following sections describe how to automate the build, test, and deploy process with GitHub Actions. The complete workflow is defined in the [`.github/workflows/ci.yml`](.github/workflows/ci.yml) file.
 
 ### About [GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions)
 > GitHub Actions is a continuous integration and continuous delivery (CI/CD) platform that allows you to automate your build, test, and deployment pipeline. You can create workflows that build and test every pull request to your repository, or deploy merged pull requests to production.
@@ -119,7 +119,7 @@ on:
 ```
 
 ### Variables
-[Environment variables](https://docs.github.com/en/actions/learn-github-actions/variables#defining-environment-variables-for-a-single-workflow) are defined in the workflow file and can be accessed with the `$VARIABLE_NAME` or `${{ env.VARIABLE_NAME }}` syntax.
+The following [environment variables](https://docs.github.com/en/actions/learn-github-actions/variables#defining-environment-variables-for-a-single-workflow) are defined in the workflow file and can be accessed with the `${{ env.VARIABLE_NAME }}` syntax.
 
 ```yaml
 env:
@@ -128,12 +128,13 @@ env:
 ```
 
 ### Secrets
-[Secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) are defined in the repository settings and can be accessed with the `${{ secrets.SECRET_NAME }}` syntax. The repository contains the three secrets `REMOTE_HOST`, `REMOTE_USER`, and `REMOTE_SSH_KEY` to access the remote server.
+The following [secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) are defined in the repository settings and can be accessed with the `${{ secrets.SECRET_NAME }}` syntax. The repository contains the three secrets `REMOTE_HOST`, `REMOTE_USER`, and `REMOTE_SSH_KEY` to access the remote server.
 
 ### Jobs
-The workflow contains two jobs: `build` and `deploy`. Both jobs run on the `ubuntu-latest` virtual machine. Each job contains `steps` that define the actions to be executed.
+The workflow contains two jobs: `build` and `deploy`. The `deploy` job depends on the `build` job, which means the jobs run in sequence. Both jobs run on the `ubuntu-latest` virtual machine. 
 
 #### Build
-The `build` job builds and tests the code. Because the code is written in Java, the job uses the [setup-java](
+The `build` job builds and tests the code with Maven and creates a JAR file. This JAR file is saved as an [artifact](https://docs.github.com/en/actions/guides/storing-workflow-data-as-artifacts) and can be downloaded from the following `deploy` job.
 
-```yaml
+#### Deploy
+The `deploy` job downloads the JAR file from the `build` job and uploads it to the remote server with `scp`. The JAR file is then moved to the Neo4j plugins folder, the owner and group are changed to `neo4j`, and the file is made executable. Finally, the Neo4j service is restarted.
