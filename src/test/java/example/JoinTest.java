@@ -39,8 +39,8 @@ public class JoinTest {
                     .single().get("result").asString();
 
             // Then
-            assertThat(result).isEqualTo(("Hello,World"));
-            // assertThat(result).isEqualTo(("World,Hello"));
+            // assertThat(result).isEqualTo(("Hello,World"));
+            assertThat(result).isEqualTo(("World,Hello"));
         }
     }
 }
