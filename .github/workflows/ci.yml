@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  PLUGIN_JAR: "example-1.0.0-SNAPSHOT.jar"
+  PLUGIN_JAR: "example-1.0.0.jar"
   PLUGIN_DIR: "/var/lib/neo4j/plugins"
 
 jobs:
