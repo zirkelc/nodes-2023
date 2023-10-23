@@ -30,17 +30,14 @@ public class JoinTest {
 
     @Test
     void joinsStrings() {
-        // This is in a try-block, to make sure we close the driver after the test
         try (Driver driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI());
                 Session session = driver.session()) {
 
-            // When
             String result = session.run("RETURN example.join(['Hello', 'World']) AS result")
                     .single().get("result").asString();
 
-            // Then
-            // assertThat(result).isEqualTo(("Hello,World"));
-            assertThat(result).isEqualTo(("World,Hello"));
+            assertThat(result).isEqualTo("Hello,World");
+            // assertThat(result).isEqualTo("World,Hello");
         }
     }
 }
