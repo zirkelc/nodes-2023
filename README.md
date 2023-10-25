@@ -3,6 +3,8 @@
 
 This repository contains the code for my talk at [Neo4j NODES 2023](https://neo4j.registration.goldcast.io/events/6fb85147-ca27-4310-9dec-cb345c53bd6f) on Octobe 26, 2023.
 
+You can find the slides for the talk at [zirkelc.dev/nodes-2023](https://zirkel.dev/nodes-2023).
+
 ## Outline
 > In this session for developers and data engineers working with Neo4j, you'll discover how GitHub Actions can streamline your development process for custom procedures and functions. Chris will show you how to create a GitHub Actions workflow that runs on every commit and push to your GitHub repository, enabling you to automate the build, testing, and deployment of your latest changes. You'll also learn how to speed up your integration process by using GitHub Actions to automatically deploy your Java plugin to your remote server, without any manual steps.
 

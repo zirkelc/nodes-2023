@@ -33,11 +33,11 @@ public class JoinTest {
         try (Driver driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI());
                 Session session = driver.session()) {
 
-            String result = session.run("RETURN example.join(['Hello', 'Nodes']) AS result")
+            String result = session.run("RETURN example.join(['Hello', 'NODES']) AS result")
                     .single().get("result").asString();
 
-            assertThat(result).isEqualTo("Hello,Nodes");
-            // assertThat(result).isEqualTo("Nodes,Hello");
+            assertThat(result).isEqualTo("Hello,NODES");
+            // assertThat(result).isEqualTo("NODES,Hello");
         }
     }
 }
