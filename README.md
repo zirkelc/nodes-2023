@@ -1,4 +1,4 @@
-[![Build](https://github.com/zirkelc/nodes-2023/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/zirkelc/nodes-2023/actions/workflows/build.yml)
+[![Build](https://github.com/zirkelc/nodes-2023/actions/workflows/main.yml/badge.svg?branch=main&event=push)](https://github.com/zirkelc/nodes-2023/actions/workflows/main.yml)
 # Streamline Your Development With GitHub Actions: Build, Test, and Deploy Custom Neo4j Code
 
 This repository contains the code for my talk at [Neo4j NODES 2023](https://neo4j.registration.goldcast.io/events/6fb85147-ca27-4310-9dec-cb345c53bd6f) on Octobe 26, 2023.

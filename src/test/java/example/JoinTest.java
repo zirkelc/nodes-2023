@@ -36,8 +36,8 @@ public class JoinTest {
             String result = session.run("RETURN example.join(['Hello', 'World']) AS result")
                     .single().get("result").asString();
 
-            // assertThat(result).isEqualTo("Hello,World");
-            assertThat(result).isEqualTo("World,Hello");
+            assertThat(result).isEqualTo("Hello,World");
+            // assertThat(result).isEqualTo("World,Hello");
         }
     }
 }

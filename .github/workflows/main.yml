@@ -72,7 +72,7 @@ jobs:
 
             sudo chmod +x ${{ env.PLUGIN_DIR }}/${{ env.PLUGIN_JAR }}
 
-      - name: Restart Neo4j serice 
+      - name: Restart Neo4j service 
         uses: appleboy/ssh-action@master # https://github.com/appleboy/ssh-action
         with:
           host: ${{ secrets.REMOTE_HOST }}
