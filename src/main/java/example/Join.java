@@ -10,6 +10,8 @@ import org.neo4j.procedure.UserFunction;
 /**
  * This is an example how you can create a simple user-defined function for
  * Neo4j.
+ * 
+ * @see https://github.com/neo4j-examples/neo4j-procedure-template/blob/5.x/src/main/java/example/Join.java
  */
 public class Join {
 
@@ -20,8 +22,6 @@ public class Join {
         if (strings == null || delimiter == null) {
             return null;
         }
-
-        Collections.reverse(strings);
 
         return String.join(delimiter, strings);
     }

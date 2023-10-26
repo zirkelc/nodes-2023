@@ -12,6 +12,9 @@ import org.neo4j.harness.Neo4jBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @see https://github.com/neo4j-examples/neo4j-procedure-template/blob/5.x/src/test/java/example/JoinTest.java
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JoinTest {
 
@@ -36,8 +39,7 @@ public class JoinTest {
             String result = session.run("RETURN example.join(['Hello', 'NODES']) AS result")
                     .single().get("result").asString();
 
-            // assertThat(result).isEqualTo("Hello,NODES");
-            assertThat(result).isEqualTo("NODES,Hello");
+            assertThat(result).isEqualTo("Hello,NODES");
         }
     }
 }
