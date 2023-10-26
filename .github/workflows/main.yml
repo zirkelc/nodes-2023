@@ -1,19 +1,29 @@
+# Workflow: Template describing an automated process
+# Can be started manually, by schedule, or by repository events
 name: "CI"
 
+# Event: Repository activity that triggers workflows
+# PRs, Issues, Comments, Commit & Push, ...
 on:
-  push:
+  push:               # Pushes
     branches: [main]
+  # pull_request:     # Pull requests
+  # issue_comment:    # Issue comments
 
-env:
-  PLUGIN_JAR: "example-1.0.0.jar"
-  PLUGIN_DIR: "/var/lib/neo4j/plugins"
-
+# Job: Sequence of tasks in a workflow
+# Multiple jobs can run in parallel or in sequence with dependencies
 jobs:
   # Build and test the code
   build:
+    # Runner: Virtual machine that runs a job with a limited lifetime
+    # GitHub hosted runners: Linux, macOS, Windows
     runs-on: ubuntu-latest
 
+    # Steps: Individual tasks that can run commands, scripts or actions
     steps:
+      # Action: Custom reusable unit of code
+      # Available in the GitHub Marketplace
+      # Shell scripts, JavaScript code, or Docker containers
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -24,10 +34,12 @@ jobs:
           distribution: "temurin"
           cache: maven
 
+      # Shell commands
       - name: Build and test with Maven
         shell: bash
         run: mvn clean package
 
+      # Caching: Store and reuse artifacts across jobs and workflows
       - name: Cache plugin JAR ${{ env.PLUGIN_JAR }}
         uses: actions/upload-artifact@v3
         with:
@@ -36,9 +48,14 @@ jobs:
 
   # Deploy the plugin to the remote Neo4j server
   deploy:
+    # Runner: Virtual machine that runs a job with a limited lifetime
+    # GitHub hosted runners: Linux, macOS, Windows
     runs-on: ubuntu-latest
+
+    # Dependencies: Jobs that must complete successfully before this job will run
     needs: [build] # this job depends on the build job
 
+    # Steps: Individual tasks that can run commands, scripts or actions
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -82,4 +99,8 @@ jobs:
           script: |
             sudo systemctl restart neo4j
             sudo systemctl status -l neo4j.service
+
+env:
+  PLUGIN_JAR: "example-1.0.0.jar"
+  PLUGIN_DIR: "/var/lib/neo4j/plugins"
 

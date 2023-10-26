@@ -17,13 +17,13 @@ public class Join {
 
     @UserFunction
     @Description("example.join(['s1','s2',...], delimiter) - join the given strings with the given delimiter.")
-    public String join(@Name("strings") List<String> strings,
-            @Name(value = "delimiter", defaultValue = ",") String delimiter) {
+    public String join(
+        @Name("strings") List<String> strings,
+        @Name(value = "delimiter", defaultValue = ",") String delimiter) {
+            
         if (strings == null || delimiter == null) {
             return null;
         }
-
-        Collections.reverse(strings);
 
         return String.join(delimiter, strings);
     }

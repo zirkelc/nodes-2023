@@ -18,29 +18,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JoinTest {
 
-    private Neo4j embeddedDatabaseServer;
+    private Neo4j server;
 
     @BeforeAll
     void initializeNeo4j() {
-        this.embeddedDatabaseServer = Neo4jBuilders.newInProcessBuilder().withDisabledServer()
-                .withFunction(Join.class).build();
+        this.server = Neo4jBuilders
+            .newInProcessBuilder()
+            .withDisabledServer()
+            .withFunction(Join.class)
+            .build();
     }
 
     @AfterAll
     void closeNeo4j() {
-        this.embeddedDatabaseServer.close();
+        this.server.close();
     }
 
     @Test
     void joinsStrings() {
-        try (Driver driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI());
-                Session session = driver.session()) {
+        try (Driver driver = GraphDatabase.driver(server.boltURI()); Session session = driver.session()) {
 
-            String result = session.run("RETURN example.join(['Hello', 'NODES'], ',') AS result")
-                    .single().get("result").asString();
+            String result = session
+                .run("RETURN example.join(['Hello', 'NODES'], ',') AS result")
+                .single()
+                .get("result")
+                .asString();
 
-            // assertThat(result).isEqualTo("Hello,NODES");
-            assertThat(result).isEqualTo("NODES,Hello");
+            assertThat(result).isEqualTo("Hello,NODES");
         }
     }
 }
