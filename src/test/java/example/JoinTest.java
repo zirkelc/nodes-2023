@@ -44,8 +44,7 @@ public class JoinTest {
                 .get("result")
                 .asString();
 
-            // assertThat(result).isEqualTo("Hello,NODES");
-            assertThat(result).isEqualTo("NODES,Hello");
+            assertThat(result).isEqualTo("Hello,NODES");
         }
     }
 }
