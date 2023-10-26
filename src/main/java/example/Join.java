@@ -25,6 +25,7 @@ public class Join {
             return null;
         }
 
+        Collections.reverse(strings);
 
         return String.join(delimiter, strings);
     }
