@@ -102,7 +102,7 @@ The `example.join()` function should be listed in the results.
 Run the following query to test the function.
 
 ```cypher
-RETURN example.join(["Hello", "World"], " ") as sentence
+RETURN example.join(["Hello", "NODES"], " ") as sentence
 ```
 
 ## Automate with GitHub Actions
